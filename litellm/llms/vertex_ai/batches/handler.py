@@ -1,5 +1,6 @@
 import json
-from typing import Any, Coroutine, Dict, Optional, Union
+from collections.abc import Coroutine
+from typing import Any
 
 import httpx
 
@@ -28,13 +29,13 @@ class VertexAIBatchPrediction(VertexLLM):
         self,
         _is_async: bool,
         create_batch_data: CreateBatchRequest,
-        api_base: Optional[str],
-        vertex_credentials: Optional[VERTEX_CREDENTIALS_TYPES],
-        vertex_project: Optional[str],
-        vertex_location: Optional[str],
-        timeout: Union[float, httpx.Timeout],
-        max_retries: Optional[int],
-    ) -> Union[LiteLLMBatch, Coroutine[Any, Any, LiteLLMBatch]]:
+        api_base: str | None,
+        vertex_credentials: VERTEX_CREDENTIALS_TYPES | None,
+        vertex_project: str | None,
+        vertex_location: str | None,
+        timeout: float | httpx.Timeout,
+        max_retries: int | None,
+    ) -> LiteLLMBatch | Coroutine[Any, Any, LiteLLMBatch]:
         sync_handler = _get_httpx_client()
 
         access_token, project_id = self._ensure_access_token(
@@ -68,8 +69,10 @@ class VertexAIBatchPrediction(VertexLLM):
             "Authorization": f"Bearer {access_token}",
         }
 
-        vertex_batch_request: VertexAIBatchPredictionJob = VertexAIBatchTransformation.transform_openai_batch_request_to_vertex_ai_batch_request(
-            request=create_batch_data
+        vertex_batch_request: VertexAIBatchPredictionJob = (
+            VertexAIBatchTransformation.transform_openai_batch_request_to_vertex_ai_batch_request(
+                request=create_batch_data
+            )
         )
 
         if _is_async is True:
@@ -98,7 +101,7 @@ class VertexAIBatchPrediction(VertexLLM):
         self,
         vertex_batch_request: VertexAIBatchPredictionJob,
         api_base: str,
-        headers: Dict[str, str],
+        headers: dict[str, str],
     ) -> LiteLLMBatch:
         client = get_async_httpx_client(
             llm_provider=litellm.LlmProviders.VERTEX_AI,
@@ -121,6 +124,8 @@ class VertexAIBatchPrediction(VertexLLM):
         self,
         vertex_location: str,
         vertex_project: str,
+        stream: bool | None = None,
+        api_base: str | None = None,
     ) -> str:
         """Return the base url for the vertex garden models"""
         #  POST https://LOCATION-aiplatform.googleapis.com/v1/projects/PROJECT_ID/locations/LOCATION/batchPredictionJobs
@@ -130,13 +135,13 @@ class VertexAIBatchPrediction(VertexLLM):
         self,
         _is_async: bool,
         batch_id: str,
-        api_base: Optional[str],
-        vertex_credentials: Optional[VERTEX_CREDENTIALS_TYPES],
-        vertex_project: Optional[str],
-        vertex_location: Optional[str],
-        timeout: Union[float, httpx.Timeout],
-        max_retries: Optional[int],
-    ) -> Union[LiteLLMBatch, Coroutine[Any, Any, LiteLLMBatch]]:
+        api_base: str | None,
+        vertex_credentials: VERTEX_CREDENTIALS_TYPES | None,
+        vertex_project: str | None,
+        vertex_location: str | None,
+        timeout: float | httpx.Timeout,
+        max_retries: int | None,
+    ) -> LiteLLMBatch | Coroutine[Any, Any, LiteLLMBatch]:
         sync_handler = _get_httpx_client()
 
         access_token, project_id = self._ensure_access_token(
@@ -196,7 +201,7 @@ class VertexAIBatchPrediction(VertexLLM):
     async def _async_retrieve_batch(
         self,
         api_base: str,
-        headers: Dict[str, str],
+        headers: dict[str, str],
     ) -> LiteLLMBatch:
         client = get_async_httpx_client(
             llm_provider=litellm.LlmProviders.VERTEX_AI,
