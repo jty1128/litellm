@@ -1,8 +1,6 @@
 name: LiteLLM Mock Tests (folder - tests/test_litellm)
 
-on:
-  pull_request:
-    branches: [ main ]
+on: push
 
 jobs:
   test:
@@ -36,5 +34,7 @@ jobs:
         python -m pip install -e .
         cd ..
     - name: Run tests
+      env:
+        LITELLM_LOCAL_MODEL_COST_MAP: "True"
       run: |
         poetry run pytest tests/test_litellm -x -vv -n 4 
