@@ -1,5 +1,5 @@
 import os
-from typing import Callable, Union
+from collections.abc import Callable
 
 from litellm.types.secret_managers.get_azure_ad_token_provider import (
     AzureCredentialType,
@@ -18,7 +18,7 @@ def get_azure_ad_token_provider() -> Callable[[], str]:
     Returns:
         Callable that returns a temporary authentication token.
     """
-    import azure.identity as identity
+    from azure import identity
     from azure.identity import (
         CertificateCredential,
         ClientSecretCredential,
@@ -26,14 +26,12 @@ def get_azure_ad_token_provider() -> Callable[[], str]:
         get_bearer_token_provider,
     )
 
-    azure_scope = os.environ.get(
-        "AZURE_SCOPE", "https://cognitiveservices.azure.com/.default"
-    )
-    cred: Union[AzureCredentialType, str] = AzureCredentialType(
+    azure_scope = os.environ.get("AZURE_SCOPE", "https://cognitiveservices.azure.com/.default")
+    cred: AzureCredentialType | str = AzureCredentialType(
         os.environ.get("AZURE_CREDENTIAL", AzureCredentialType.ClientSecretCredential)
     )
     if cred == AzureCredentialType.ClientSecretCredential:
-        credential = ClientSecretCredential(
+        credential: ClientSecretCredential | ManagedIdentityCredential | CertificateCredential = ClientSecretCredential(
             client_id=os.environ["AZURE_CLIENT_ID"],
             client_secret=os.environ["AZURE_CLIENT_SECRET"],
             tenant_id=os.environ["AZURE_TENANT_ID"],
